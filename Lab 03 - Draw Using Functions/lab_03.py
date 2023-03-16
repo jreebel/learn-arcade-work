@@ -28,10 +28,14 @@ def on_draw(delta_time):
     arcade.start_render()
 
     draw_grass()
-    draw_snow_person(150, 140)
+    draw_snow_person(on_draw.snow_person_x, 140)
     draw_snow_person(450, 180)
 
-    arcade.finish_render()
+    on_draw.snow_person_x += 1
+    # arcade.finish_render()
+
+
+on_draw.snow_person_x = 150
 
 
 def main():
