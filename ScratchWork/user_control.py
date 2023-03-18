@@ -15,6 +15,9 @@ class Ball:
         self.radius = radius
         self.color = color
 
+        self.explosion_sound = arcade.load_sound(":resources:sounds/explosion2.wav")
+        self.explosion_sound_player = None
+
     def draw(self):
         arcade.draw_circle_filled(self.position_x,
                                   self.position_y,
@@ -22,21 +25,30 @@ class Ball:
                                   self.color)
 
     def update(self):
+        boom = False
         self.position_x += self.change_x
         self.position_y += self.change_y
 
         # don't go off screen
         if self.position_x < self.radius:
             self.position_x = self.radius
+            boom = True
 
         if self.position_x > SCREEN_WIDTH - self.radius:
             self.position_x = SCREEN_WIDTH - self.radius
+            boom = True
 
         if self.position_y < self.radius:
             self.position_y = self.radius
+            boom = True
 
         if self.position_y > SCREEN_HEIGHT - self.radius:
             self.position_y = SCREEN_HEIGHT - self.radius
+            boom = True
+
+        if boom:
+            if not self.explosion_sound_player or not self.explosion_sound_player.playing:
+                self.explosion_sound_player = arcade.play_sound(self.explosion_sound)
 
 
 class MyGame(arcade.Window):
