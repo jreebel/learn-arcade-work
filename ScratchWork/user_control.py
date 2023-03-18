@@ -2,7 +2,8 @@ import arcade
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
-MOVEMENT_SPEED = 3
+MOVEMENT_SPEED = 5
+DEAD_ZONE = 0.02
 
 
 class Ball:
@@ -46,6 +47,15 @@ class MyGame(arcade.Window):
         # make the mouse pointer disappear when over our window
         self.set_mouse_visible(False)
 
+        # check for game controller hardware
+        joysticks = arcade.get_joysticks()
+        if joysticks:
+            self.joystick = joysticks[0]
+            self.joystick.open()
+            print("Joystick initialized.")
+        else:
+            print("No joystick detected.")
+
         arcade.set_background_color(arcade.color.ASPARAGUS)
 
         # create a ball
@@ -57,8 +67,21 @@ class MyGame(arcade.Window):
         self.ball.draw()
 
     def update(self, delta_time: float):
+        if self.joystick:
+            # set dead zone to stop any drift from centered joystick
+            if abs(self.joystick.x) < DEAD_ZONE:
+                self.ball.change_x = 0
+            else:
+                self.ball.change_x = self.joystick.x * MOVEMENT_SPEED
+
+            if abs(self.joystick.y) < DEAD_ZONE:
+                self.ball.change_y = 0
+            else:
+                self.ball.change_y = -self.joystick.y * MOVEMENT_SPEED
+
         self.ball.update()
 
+    # Use arrow keys to control ball
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.LEFT:
             self.ball.change_x = -MOVEMENT_SPEED
@@ -75,6 +98,8 @@ class MyGame(arcade.Window):
         if key == arcade.key.UP or key == arcade.key.DOWN:
             self.ball.change_y = 0
 
+
+    # # Use mouse to control ball
     # def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
     #     # make the ball foolow the mouse position
     #     self.ball.position_x = x
