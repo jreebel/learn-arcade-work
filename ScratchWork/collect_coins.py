@@ -1,7 +1,5 @@
 import random
 import arcade
-from sys import exit
-from time import sleep
 
 SPRITE_SCALING_PLAYER = 0.5
 SPRITE_SCALING_COIN = 0.3
@@ -14,6 +12,18 @@ PLAYER_CENTER_OFFSET_Y = 64
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+
+
+class Coin(arcade.Sprite):
+
+    def update(self):
+        # have coins fall
+        self.center_y -= 1
+
+        # if they fall off the bottom, reset at random spot
+        if self.top < 0:
+            self.center_y = random.randrange(SCREEN_HEIGHT + 20, SCREEN_HEIGHT + 100)
+            self.center_x = random.randrange(SCREEN_WIDTH)
 
 
 class MyGame(arcade.Window):
@@ -58,7 +68,7 @@ class MyGame(arcade.Window):
         # create the coins
 
         for i in range(COIN_COUNT):
-            coin = arcade.Sprite("coin.png", SPRITE_SCALING_COIN)
+            coin = Coin("coin.png", SPRITE_SCALING_COIN)
             coin.center_x = random.randrange(SCREEN_WIDTH)
             coin.center_y = random.randrange(SCREEN_HEIGHT)
             self.coin_list.append(coin)
