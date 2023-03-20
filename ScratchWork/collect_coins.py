@@ -6,8 +6,6 @@ SPRITE_SCALING_COIN = 0.3
 COIN_COUNT = 50
 MOVEMENT_SPEED = 5
 DEAD_ZONE = 0.02
-PLAYER_CENTER_OFFSET_X = 32
-PLAYER_CENTER_OFFSET_Y = 64
 
 
 SCREEN_WIDTH = 800
@@ -15,6 +13,10 @@ SCREEN_HEIGHT = 600
 
 
 class Coin(arcade.Sprite):
+    def reset_pos(self):
+        # reset the coin to a random spot up top
+        self.center_y = random.randrange(SCREEN_HEIGHT + 20, SCREEN_HEIGHT + 100)
+        self.center_x = random.randrange(SCREEN_WIDTH)
 
     def update(self):
         # have coins fall
@@ -22,8 +24,7 @@ class Coin(arcade.Sprite):
 
         # if they fall off the bottom, reset at random spot
         if self.top < 0:
-            self.center_y = random.randrange(SCREEN_HEIGHT + 20, SCREEN_HEIGHT + 100)
-            self.center_x = random.randrange(SCREEN_WIDTH)
+            self.reset_pos()
 
 
 class MyGame(arcade.Window):
@@ -85,17 +86,30 @@ class MyGame(arcade.Window):
         if self.use_mouse:
             self.player_sprite.center_x = x
             self.player_sprite.center_y = y
+            self.check_player_pos()
+
+    def check_player_pos(self):
+        if self.player_sprite.left <= 1:
+            self.player_sprite.left = 1
+        if self.player_sprite.right >= SCREEN_WIDTH:
+            self.player_sprite.right = SCREEN_WIDTH
+
+        if self.player_sprite.bottom <= 1:
+            self.player_sprite.bottom = 1
+        if self.player_sprite.top >= SCREEN_HEIGHT:
+            self.player_sprite.top = SCREEN_HEIGHT
 
     def update(self, delta_time: float):
         """ Movement and game logic """
         self.coin_list.update()
         self.player_sprite.update()
 
-        coins_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coin_list)
+        hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coin_list)
         # loop thru the hit sprites, remove them and update score
-        for coin in coins_hit_list:
-            coin.remove_from_sprite_lists()
+        for coin in hit_list:
+            # coin.remove_from_sprite_lists()
             self.score += 1
+            coin.reset_pos()
 
         if self.joystick:
             # set dead zone to stop any drift from centered joystick
@@ -103,19 +117,13 @@ class MyGame(arcade.Window):
                 pass
             else:
                 self.player_sprite.center_x += self.joystick.x * MOVEMENT_SPEED
-                if self.player_sprite.center_x <= 1:
-                    self.player_sprite.center_x = PLAYER_CENTER_OFFSET_X
-                if self.player_sprite.center_x >= SCREEN_WIDTH:
-                    self.player_sprite.center_x -= PLAYER_CENTER_OFFSET_X
+                self.check_player_pos()
 
             if abs(self.joystick.y) < DEAD_ZONE:
                 pass
             else:
                 self.player_sprite.center_y += -self.joystick.y * MOVEMENT_SPEED
-                if self.player_sprite.center_y <= 1:
-                    self.player_sprite.center_y = PLAYER_CENTER_OFFSET_Y
-                if self.player_sprite.center_y >= SCREEN_HEIGHT:
-                    self.player_sprite.center_y -= PLAYER_CENTER_OFFSET_Y
+                self.check_player_pos()
 
 
 def main():
