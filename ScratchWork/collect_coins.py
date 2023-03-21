@@ -2,7 +2,7 @@ import random
 import arcade
 
 SPRITE_SCALING_PLAYER = 0.5
-SPRITE_SCALING_COIN = 0.3
+SPRITE_SCALING_COIN = 0.2
 COIN_COUNT = 50
 MOVEMENT_SPEED = 5
 DEAD_ZONE = 0.02
@@ -13,18 +13,27 @@ SCREEN_HEIGHT = 600
 
 
 class Coin(arcade.Sprite):
-    def reset_pos(self):
-        # reset the coin to a random spot up top
-        self.center_y = random.randrange(SCREEN_HEIGHT + 20, SCREEN_HEIGHT + 100)
-        self.center_x = random.randrange(SCREEN_WIDTH)
+
+    def __init__(self, filename, sprite_scaling):
+        super().__init__(filename, sprite_scaling)
+
+        self.change_y = 0
+        self.change_x = 0
 
     def update(self):
-        # have coins fall
-        self.center_y -= 1
+        # move the coin
+        self.center_x += self.change_x
+        self.center_y += self.change_y
 
-        # if they fall off the bottom, reset at random spot
-        if self.top < 0:
-            self.reset_pos()
+        # bounce if out of bounds
+        if self.left < 0:
+            self.change_x *= -1
+        if self.right > SCREEN_WIDTH:
+            self.change_x *= -1
+        if self.bottom < 0:
+            self.change_y *= -1
+        if self.top > SCREEN_HEIGHT:
+            self.change_y *= -1
 
 
 class MyGame(arcade.Window):
@@ -72,6 +81,8 @@ class MyGame(arcade.Window):
             coin = Coin("coin.png", SPRITE_SCALING_COIN)
             coin.center_x = random.randrange(SCREEN_WIDTH)
             coin.center_y = random.randrange(SCREEN_HEIGHT)
+            coin.change_x = random.randrange(-3, 4)
+            coin.change_y = random.randrange(-3, 4)
             self.coin_list.append(coin)
 
     def on_draw(self):
@@ -102,14 +113,13 @@ class MyGame(arcade.Window):
     def update(self, delta_time: float):
         """ Movement and game logic """
         self.coin_list.update()
-        self.player_sprite.update()
+        # self.player_sprite.update()
 
         hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coin_list)
         # loop thru the hit sprites, remove them and update score
         for coin in hit_list:
-            # coin.remove_from_sprite_lists()
+            coin.remove_from_sprite_lists()
             self.score += 1
-            coin.reset_pos()
 
         if self.joystick:
             # set dead zone to stop any drift from centered joystick
