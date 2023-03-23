@@ -18,6 +18,8 @@ class MyGame(arcade.Window):
         self.wall_list = None
 
         self.physics_engine = None
+        self.camera_for_sprites = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.camera_for_gui = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
 
     def setup(self):
         arcade.set_background_color(arcade.color.AMAZON)
@@ -85,11 +87,33 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
+
+        # use the sprite camera
+        self.camera_for_sprites.use()
         self.wall_list.draw()
         self.player_list.draw()
 
+        # use the static camera for our GUI
+        self.camera_for_gui.use()
+        arcade.draw_text(f"Score: {self.score}", 10, 10, arcade.color.WHITE, 24)
+
     def update(self, delta_time):
+        # movement and game logic
         self.physics_engine.update()
+
+        # scroll the screen to the player
+        self.scroll_to_player()
+
+    def scroll_to_player(self):
+        # scroll the window to the player
+        # If CAMERA_SPEED is 1, the camera will immediately move to the desired position.
+        # Anything between 0 and 1 will have the camera move to the location with a smoother
+        # pan.
+        CAMERA_SPEED = 1
+        position = (self.player_sprite.center_x - self.width / 2,
+                    self.player_sprite.center_y - self.height / 2)
+        self.camera_for_sprites.move_to(position, CAMERA_SPEED)
+
 
 def main():
     window = MyGame()
